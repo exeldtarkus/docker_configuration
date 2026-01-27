@@ -16,7 +16,6 @@ Whether you are working on Java Spring Boot microservices, Node.js applications,
 
 The following services are pre-configured to work independently. Each folder contains the specific configuration files and persistent data mappings required for that service.
 
-| -----------------------|------------------|--------------|--------------------------------------------------------------------------|
 | Category               | Service Folder   | Default Port | Description                                                              |
 | -----------------------|------------------|--------------|--------------------------------------------------------------------------|
 | **Config & Discovery** | `consul/`        | `8500`       | HashiCorp Consul for Service Discovery & Key-Value (KV) Store.           |
@@ -26,7 +25,6 @@ The following services are pre-configured to work independently. Each folder con
 | **Security**           | `vault/`         | `8200`       | HashiCorp Vault for managing secrets and sensitive data.                 |
 | **Code Quality**       | `sonar/`         | `9000`       | SonarQube for static code analysis and security auditing.                |
 | **Web Servers**        | `tomcat/`        | `808x`       | Apache Tomcat containers (Versions 8.5, 9, and 10 available).            |
-| -----------------------|------------------|--------------|--------------------------------------------------------------------------|
 
 ---
 
