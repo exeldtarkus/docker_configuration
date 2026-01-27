@@ -1,0 +1,18 @@
+{
+    "workbench.colorCustomizations": {
+        // --- Title Bar (Bagian Paling Atas) ---
+        "titleBar.activeBackground": "#0b7291",    // Warna latar belakang Title Bar saat jendela aktif
+        "titleBar.activeForeground": "#1e1e1e",    // Warna teks judul, menu hamburger, dan ikon kontrol jendela
+        "titleBar.inactiveBackground": "#0b7291",  // Warna latar belakang Title Bar saat jendela tidak fokus
+        "titleBar.inactiveForeground": "#1e1e1e",  // Warna teks Title Bar saat jendela tidak fokus
+
+        // --- Activity Bar (Bar Samping Ikon Explorer, Search, dll) ---
+        "activityBar.background": "#0b7291",       // Warna latar belakang bar samping
+        "activityBar.foreground": "#FFFFFF",       // Warna ikon yang sedang dipilih/aktif
+        "activityBar.inactiveForeground": "#1e1e1e", // Warna ikon yang sedang tidak dipilih/inaktif
+        
+        // --- Activity Bar Badge (Bulatan Notifikasi Angka) ---
+        "activityBarBadge.background": "#1e1e1e",  // Warna latar belakang bulatan notifikasi (misal: jumlah git change)
+        "activityBarBadge.foreground": "#FFFFFF"   // Warna angka/teks di dalam bulatan notifikasi
+    }
+}

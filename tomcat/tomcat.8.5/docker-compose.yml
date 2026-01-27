@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  tomcat8:
+    image: tomcat:8.5-jdk8-corretto
+    container_name: tomcat_8_5_java_8
+    restart: always
+    ports:
+      - "8085:8080"
+    volumes:
+      - ../conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
+      - ../conf/manager.xml:/tmp/manager.xml
+      - //10.1.40.104/connectionstring/jdbc_BASS_VA_BCA.properties:/usr/local/tomcat/conf/jdbc_BASS_VA_BCA.properties
+    environment:
+      - JAVA_OPTS=-Xmx512m -Xms256m
+    networks:
+      - shared-network-xl
+    command: >
+      sh -c "cp -r /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps/ &&
+             mkdir -p /usr/local/tomcat/conf/Catalina/localhost &&
+             cp /tmp/manager.xml /usr/local/tomcat/conf/Catalina/localhost/manager.xml &&
+             sed -i 's/52428800/104857600/g' /usr/local/tomcat/webapps/manager/WEB-INF/web.xml &&
+             catalina.sh run"
+
+networks:
+  shared-network-xl:
+    external: true

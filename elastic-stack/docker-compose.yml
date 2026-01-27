@@ -1,0 +1,127 @@
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+    networks: [elastic]
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    container_name: kibana
+    depends_on:
+      es01:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es01:9200
+      - xpack.security.enabled=false
+    ports:
+      - "5601:5601"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+    networks: [elastic]
+    restart: unless-stopped
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
+    container_name: apm-server
+    environment:
+      - APM_SERVER_WAIT_FOR_INTEGRATION=false
+      - APM_SERVER_DATA_STREAMS_ENABLED=true
+      - OUTPUT_ELASTICSEARCH_HOSTS=http://es01:9200
+      - SETUP_KIBANA_HOST=http://kibana:5601
+    depends_on:
+      kibana:
+        condition: service_healthy
+    volumes:
+      - ./apm-server/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
+    command: ["--strict.perms=false", "-e"]
+    ports:
+      - "8200:8200"
+    networks: [elastic]
+    restart: unless-stopped
+
+  # apm-server:
+  #   image: docker.elastic.co/apm/apm-server:7.17.18 # Downgrade ke 7.x
+  #   container_name: apm-server
+  #   depends_on:
+  #     es01:
+  #       condition: service_healthy
+  #     kibana:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./apm-server/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
+  #   command: ["--strict.perms=false", "-e"]
+  #   ports:
+  #     - "8200:8200"
+  #   networks: [elastic]
+  #   restart: unless-stopped
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    container_name: logstash
+    depends_on:
+      es01:
+        condition: service_healthy
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    networks: [elastic]
+    restart: unless-stopped
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    container_name: filebeat
+    user: root
+    depends_on:
+      kibana:
+        condition: service_healthy
+      logstash:
+        condition: service_started
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: ["--strict.perms=false", "-e"]
+    networks: [elastic]
+    restart: unless-stopped
+
+  # metricbeat:
+  #   image: docker.elastic.co/beats/metricbeat:8.12.2
+  #   user: root
+  #   pid: host
+  #   volumes:
+  #     - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - /proc:/hostfs/proc:ro
+  #     - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+  #     - /:/hostfs:ro
+  #   command: ["--strict.perms=false", "-e"]
+
+
+volumes:
+  esdata01:
+
+networks:
+  elastic:
+    driver: bridge

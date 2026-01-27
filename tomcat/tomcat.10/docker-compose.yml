@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  tomcat10:
+    image: tomcat:10.1-jdk21
+    container_name: tomcat_10_java_21
+    restart: always
+    ports:
+      - "8087:8080"
+    volumes:
+      - ../conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
+      - ../conf/manager.xml:/tmp/manager.xml
+    environment:
+      - JAVA_OPTS=-Xmx512m -Xms256m
+    command: >
+      sh -c "cp -r /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps/ &&
+             mkdir -p /usr/local/tomcat/conf/Catalina/localhost &&
+             cp /tmp/manager.xml /usr/local/tomcat/conf/Catalina/localhost/manager.xml &&
+             catalina.sh run"

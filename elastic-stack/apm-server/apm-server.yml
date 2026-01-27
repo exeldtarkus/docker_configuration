@@ -1,0 +1,36 @@
+
+# # configuration for apm 8.*
+apm-server:
+  host: "0.0.0.0:8200"
+  data_streams:
+    enabled: true
+    wait_for_integration: false
+
+output.elasticsearch:
+  hosts: ["http://es01:9200"]
+
+# OPTIONAL (buat Agent Central Config di Kibana)
+apm-server.kibana:
+  enabled: true
+  host: "http://kibana:5601"
+
+# OPTIONAL (buat kebutuhan setup tertentu)
+setup.kibana:
+  host: "http://kibana:5601"
+
+
+# # configuration for apm 7.*
+
+# apm-server:
+#   host: "0.0.0.0:8200"
+#   secret_token: ""
+
+# output.elasticsearch:
+#   hosts: ["http://es01:9200"]
+
+# setup.kibana:
+#   host: "http://kibana:5601"
+
+# # Memaksa setup otomatis saat startup
+# setup.template.enabled: true
+# setup.ilm.enabled: true
