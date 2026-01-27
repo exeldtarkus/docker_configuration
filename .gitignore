@@ -1,0 +1,21 @@
+# --- Consul Specific ---
+# Abaikan folder data yang berisi state, logs, dan snapshots Consul
+consul/data/
+
+# --- Docker Specific ---
+# Jika Anda menggunakan file .env untuk kredensial lokal
+.env
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE Specific (VS Code) ---
+.vscode/*
+!.vscode/settings.json
+*.code-workspace
+
+# --- Backup/Logs ---
+*.log
+*.bak
