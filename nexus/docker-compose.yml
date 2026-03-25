@@ -1,0 +1,15 @@
+services:
+  nexus:
+    image: sonatype/nexus3:latest
+    container_name: nexus-local
+    restart: always
+    ports:
+      - "8081:8081"  # Port Management GUI
+      - "8802:8802"  # Port Docker Connector (Sesuaikan dengan server)
+    volumes:
+      - nexus-data:/nexus-data
+    environment:
+      - INSTALL4J_ADD_VM_PARAMS=-Xms2g -Xmx2g -XX:MaxDirectMemorySize=2g
+
+volumes:
+  nexus-data:
