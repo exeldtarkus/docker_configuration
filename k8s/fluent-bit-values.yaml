@@ -1,0 +1,95 @@
+hostNetwork: true
+dnsPolicy: ClusterFirstWithHostNet
+
+config:
+  service: |
+    [SERVICE]
+        Flush         1
+        Daemon        Off
+        Log_Level     info
+        Parsers_File  parsers.conf
+        HTTP_Server   On
+        HTTP_Listen   0.0.0.0
+        HTTP_Port     2020
+        Health_Check  On
+
+  parsers: |
+    [PARSER]
+        Name         json
+        Format       json
+        Time_Key     timestamp
+        Time_Format  %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep    On
+
+  inputs: |
+    [INPUT]
+        Name              tail
+        Path              /var/log/containers/*.log
+        Parser            cri
+        Tag               kube.*
+        Refresh_Interval  5
+        Mem_Buf_Limit     10MB
+        Skip_Long_Lines   On
+
+  filters: |
+    [FILTER]
+        Name                kubernetes
+        Match               kube.*
+        Kube_URL            https://kubernetes.default.svc:443
+        Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
+        Kube_Tag_Prefix     kube.var.log.containers.
+        Merge_Log           On
+        Keep_Log            On
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude Off
+
+    [FILTER]
+        Name                parser
+        Match               kube.*
+        # --- PERUBAHAN ADA DI SINI: Ganti 'log' menjadi 'message' ---
+        Key_Name            message
+        Parser              json
+        Preserve_Key        Off
+        Reserve_Data        On
+
+    [FILTER]
+        Name                rewrite_tag
+        Match               kube.*
+        Rule                $kubernetes['namespace_name'] ^(kube-system)$ system.log false
+        Rule                $kubernetes['namespace_name'] ^(default)$ app.log false
+
+  outputs: |
+    [OUTPUT]
+        Name                es
+        Match               app.log
+        Host                10.1.40.240
+        Port                9200
+        tls                 On
+        tls.verify          Off
+        HTTP_User           elastic
+        HTTP_Passwd         elastic
+        Buffer_Size         2M
+        Logstash_Format     On
+        Logstash_Prefix     applogs-app-microk8s
+        Time_Key            @timestamp
+        Replace_Dots        On
+        Suppress_Type_Name  On
+        Retry_Limit         5
+
+    [OUTPUT]
+        Name                es
+        Match               system.log
+        Host                10.1.40.240
+        Port                9200
+        tls                 On
+        tls.verify          Off
+        HTTP_User           elastic
+        HTTP_Passwd         elastic
+        Buffer_Size         2M
+        Logstash_Format     On
+        Logstash_Prefix     applogs-system-microk8s
+        Time_Key            @timestamp
+        Replace_Dots        On
+        Suppress_Type_Name  On
+        Retry_Limit         5
