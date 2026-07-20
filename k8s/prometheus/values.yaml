@@ -1,0 +1,109 @@
+
+fullnameOverride: monitoring
+
+# ================= PROMETHEUS =================
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    retentionSize: "5GB"
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path   # default k3s storage class
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    # Kalau mau scrape service di namespace lain (mis. namespace BIMA),
+    # kosongkan selector supaya semua ServiceMonitor ke-pickup
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - prometheus.bcalife.internal   # GANTI sesuai domain internal kamu
+    paths:
+      - /
+    pathType: Prefix
+
+# ================= ALERTMANAGER =================
+# Matikan dulu kalau belum butuh alerting channel (Slack/Telegram/dsb)
+alertmanager:
+  enabled: false
+
+# ================= GRAFANA =================
+grafana:
+  enabled: true
+  adminPassword: "GantiPasswordIni123!"   # GANTI, atau pakai existingSecret
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    size: 2Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana.bcalife.internal       # GANTI sesuai domain internal kamu
+    path: /
+
+# ================= NODE EXPORTER =================
+nodeExporter:
+  enabled: true
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# ================= KUBE-STATE-METRICS =================
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# ================= OPERATOR =================
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  admissionWebhooks:
+    patch:
+      enabled: true
+
+# Non-aktifkan komponen yang biasanya tidak relevan untuk single-node k3s kecil
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
